@@ -40,7 +40,6 @@ public class AppInfoController {
         info.put("welcomeMessage", messageSource.getMessage(
                 "app.welcome", new Object[]{appSettings.getTitle()}, locale));
         info.put("contactEmail", appSettings.getContactEmail());
-        info.put("paginationLimit", appSettings.getPaginationLimit());
         info.put("locale", locale.toLanguageTag());
 
         // feature flag from the active profile's configuration

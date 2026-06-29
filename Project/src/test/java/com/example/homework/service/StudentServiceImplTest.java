@@ -1,6 +1,5 @@
 package com.example.homework.service;
 
-import com.example.homework.config.AppSettingsProperties;
 import com.example.homework.dto.request.StudentRequest;
 import com.example.homework.dto.response.StudentResponse;
 import com.example.homework.entity.Student;
@@ -14,10 +13,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +36,6 @@ class StudentServiceImplTest {
 
     @Mock
     private StudentRepository studentRepository;
-    @Mock
-    private AppSettingsProperties appSettings;
 
     private MeterRegistry meterRegistry;
     private StudentServiceImpl studentService;
@@ -47,7 +44,7 @@ class StudentServiceImplTest {
     void setUp() {
         // A real in-memory registry so the creation counter behaves naturally
         meterRegistry = new SimpleMeterRegistry();
-        studentService = new StudentServiceImpl(studentRepository, appSettings, meterRegistry);
+        studentService = new StudentServiceImpl(studentRepository, meterRegistry);
     }
 
     private Student student(Long id, String email) {
@@ -103,19 +100,18 @@ class StudentServiceImplTest {
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
-    @ParameterizedTest(name = "limit={0} over {1} students returns {2}")
-    @CsvSource({"5, 3, 3", "2, 5, 2", "10, 10, 10"})
-    @DisplayName("getAllStudents honours the profile pagination limit")
-    void getAllStudents_appliesPaginationLimit(int limit, int available, int expected) {
-        when(appSettings.getPaginationLimit()).thenReturn(limit);
+    @ParameterizedTest(name = "{0} stored students are all returned")
+    @ValueSource(ints = {0, 1, 5})
+    @DisplayName("getAllStudents returns every stored student")
+    void getAllStudents_returnsAllStudents(int available) {
         List<Student> students = IntStream.rangeClosed(1, available)
-                .mapToObj(i -> student((long) i, "s" + i + "@example.com"))
-                .toList();
+                .mapToObj(i -> student((long) i, "s" + i + "@example.com")).toList();
+
         when(studentRepository.findAll()).thenReturn(students);
 
         List<StudentResponse> result = studentService.getAllStudents();
 
-        assertThat(result).hasSize(expected);
+        assertThat(result).hasSize(available);
     }
 
     @Test

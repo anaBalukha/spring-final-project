@@ -11,6 +11,8 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import com.example.homework.config.OpenApiConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("/api/students")
@@ -22,6 +24,7 @@ public class StudentController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = OpenApiConfig.BASIC_AUTH_SCHEME)
     @Operation(summary = "Create a new student — requires authentication")
     public ResponseEntity<StudentResponse> create(@Valid @RequestBody StudentRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(studentService.createStudent(request));
@@ -40,6 +43,7 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
+    @SecurityRequirement(name = OpenApiConfig.BASIC_AUTH_SCHEME)
     @Operation(summary = "Update a student by ID")
     public ResponseEntity<StudentResponse> update(@PathVariable Long id,
                                                    @Valid @RequestBody StudentRequest request) {
@@ -48,6 +52,7 @@ public class StudentController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = OpenApiConfig.BASIC_AUTH_SCHEME)
     @Operation(summary = "Delete a student and all their courses — ADMIN only")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         studentService.deleteStudent(id);

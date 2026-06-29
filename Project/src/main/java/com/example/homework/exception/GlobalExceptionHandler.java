@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -95,6 +99,55 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
+
+// Wrong username/password from POST /api/auth/login returns 401.
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.builder().status(HttpStatus.UNAUTHORIZED.value())
+                                .message(localize("error.auth.invalid.credentials")).timestamp(LocalDateTime.now())
+                                .build());
+    }
+
+
+// Unknown paths return 404.
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex) {
+        log.warn("No resource found for path {}", ex.getResourcePath());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.builder().status(HttpStatus.NOT_FOUND.value())
+                                .message(localize("error.resource.notfound"))
+                                .timestamp(LocalDateTime.now()).build());
+    }
+
+
+// Example: /api/students/abc instead of a numeric ID.
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.debug("Invalid value for parameter {}: {}", ex.getName(), ex.getValue());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.builder().status(HttpStatus.BAD_REQUEST.value())
+                                .message(localize("error.request.invalid.parameter", ex.getName()))
+                                .timestamp(LocalDateTime.now()).build());
+    }
+
+
+// Protects against database constraint races. two requests attempting the same email simultaneously.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataConflict(DataIntegrityViolationException ex) {
+        log.warn("Database constraint rejected the request: {}",
+                ex.getMostSpecificCause().getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.builder()
+                        .status(HttpStatus.CONFLICT.value())
+                        .message(localize("error.data.conflict")).timestamp(LocalDateTime.now()).build());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Unhandled exception while processing request", ex);
@@ -111,4 +164,5 @@ public class GlobalExceptionHandler {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(key, args, locale);
     }
+
 }

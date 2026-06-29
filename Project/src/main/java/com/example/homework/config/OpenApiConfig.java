@@ -1,5 +1,7 @@
 package com.example.homework.config;
 
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -9,7 +11,15 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RequiredArgsConstructor
+@SecurityScheme(
+        name = "basicAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "basic",
+        description = "Enter the application username and password"
+)
 public class OpenApiConfig {
+
+    public static final String BASIC_AUTH_SCHEME = "basicAuth";
 
     private final AppSettingsProperties appSettings;
 

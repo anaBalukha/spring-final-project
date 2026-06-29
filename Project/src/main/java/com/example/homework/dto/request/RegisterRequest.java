@@ -1,6 +1,5 @@
 package com.example.homework.dto.request;
 
-import com.example.homework.entity.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -17,5 +16,4 @@ public class RegisterRequest {
     @Size(min = 6, message = "{validation.user.password.size}")
     private String password;
 
-    private Role role;
 }

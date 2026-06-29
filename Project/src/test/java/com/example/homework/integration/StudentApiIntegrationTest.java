@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.http.*;
+import com.example.homework.dto.response.UserResponse;
+import com.example.homework.entity.Role;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -99,9 +101,94 @@ class StudentApiIntegrationTest {
                 .isEqualTo(HttpStatus.OK);
     }
 
+    @Test
+    @DisplayName("public registration cannot create an ADMIN")
+    void registration_cannotCreateAdmin() {
+        String username =
+                "safeUser" + System.nanoTime();
+
+        /*
+         * CHANGED:
+         * We intentionally send role=ADMIN.
+         * RegisterRequest no longer accepts it,
+         * so the created account must still be USER.
+         */
+        String json = """
+            {
+              "username": "%s",
+              "password": "secret123",
+              "role": "ADMIN"
+            }
+            """.formatted(username);
+
+        ResponseEntity<UserResponse> response =
+                restTemplate.postForEntity(
+                        "/api/auth/register",
+                        jsonEntity(json),
+                        UserResponse.class
+                );
+
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.CREATED);
+
+        assertThat(response.getBody())
+                .isNotNull();
+
+        assertThat(response.getBody().getRole())
+                .isEqualTo(Role.USER);
+    }
+
+    @Test
+    @DisplayName("invalid login credentials return 401 instead of 500")
+    void login_invalidCredentials_returns401() {
+        String json = """
+            {
+              "username": "admin",
+              "password": "wrong-password"
+            }
+            """;
+
+        ResponseEntity<String> response =
+                restTemplate.postForEntity(
+                        "/api/auth/login",
+                        jsonEntity(json),
+                        String.class
+                );
+
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("an unknown endpoint returns 404 instead of 500")
+    void unknownEndpoint_returns404() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/endpoint-that-does-not-exist", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("OpenAPI document contains HTTP Basic security")
+    void openApi_containsBasicAuthenticationScheme() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/api-docs", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(response.getBody()).contains("basicAuth");
+    }
+
     private HttpEntity<StudentRequest> jsonEntity(StudentRequest body) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return new HttpEntity<>(body, headers);
     }
+
+    // Helper for raw JSON registration/login requests.
+    private HttpEntity<String> jsonEntity(String body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        return new HttpEntity<>(body, headers);
+    }
+
 }

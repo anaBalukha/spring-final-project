@@ -33,6 +33,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             .authorizeHttpRequests(auth -> auth
+                    // home page redirects to swagger and is public
+                    .requestMatchers("/").permitAll()
                 // public auth endpoints
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 // Swagger UI — always accessible
@@ -53,6 +55,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/students/**", "/api/courses/**").hasRole("ADMIN")
                 // only ADMIN can list all users
                 .requestMatchers(HttpMethod.GET, "/api/auth/users").hasRole("ADMIN")
+                    .requestMatchers("/api/auth/users", "/api/auth/users/**").hasRole("ADMIN")
                 // everything else requires at least authentication
                 .anyRequest().authenticated()
             )

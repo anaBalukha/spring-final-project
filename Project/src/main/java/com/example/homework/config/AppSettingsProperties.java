@@ -1,8 +1,6 @@
 package com.example.homework.config;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,11 +21,6 @@ public class AppSettingsProperties {
     /** Human-readable application title shown in /api/info and Swagger. */
     @NotBlank
     private String title;
-
-    /** Maximum number of items returned by list endpoints. */
-    @Min(1)
-    @Max(500)
-    private int paginationLimit;
 
     /** Contact e-mail published in API metadata. */
     @NotBlank

@@ -6,8 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
-
+import org.springframework.dao.DataIntegrityViolationException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Repository-layer slice test against an embedded H2 database. Exercises the
@@ -50,9 +51,18 @@ class StudentRepositoryTest {
     }
 
     @Test
-    @DisplayName("the unique email constraint is enforced at the column level")
+    @DisplayName("the database rejects duplicate student emails")
     void emailColumnIsUnique() {
-        persistStudent("dupe@example.com");
-        assertThat(studentRepository.existsByEmail("dupe@example.com")).isTrue();
+        Student first = Student.builder().firstName("Nino").lastName("Beridze")
+                .email("dupe@example.com").build();
+
+        Student second = Student.builder()
+                .firstName("Ana").lastName("Lomidze")
+                .email("dupe@example.com").build();
+
+        studentRepository.saveAndFlush(first);
+
+        assertThatThrownBy(() -> studentRepository.saveAndFlush(second))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 }
