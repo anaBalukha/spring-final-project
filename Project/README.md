@@ -4,8 +4,9 @@ A Spring Boot REST API for managing students, courses, and application users.
 
 The project demonstrates a layered architecture:
 
-text
+```text
 Controller → Service → Repository → Database
+```
 
 It includes CRUD operations, DTOs, validation, global exception handling, authentication and authorization, Spring profiles, internationalization, structured logging, automated testing, Swagger/OpenAPI documentation, and Spring Boot Actuator monitoring.
 
@@ -68,8 +69,9 @@ The following software is required:
 The project includes Maven Wrapper, so a separate Maven installation is not required.
 
 Verify Java:
-
+```
 java -version
+```
 
 The output should show Java 21.
 
@@ -115,21 +117,22 @@ java -jar target/Homework-0.0.1-SNAPSHOT.jar
 
 The application starts on:
 
-text
+```text
 http://localhost:8080
+```
 
 Opening the root address redirects to Swagger UI.
 
 Swagger UI is also available directly at:
 
-text
+```text
 http://localhost:8080/swagger-ui/index.html
-
+```
 The OpenAPI document is available at:
 
-text
+```text
 http://localhost:8080/api-docs
-
+```
 ---
 
 ## Development Credentials
@@ -191,18 +194,20 @@ POST /api/auth/register
 Public registration always creates a user with the USER role.
 
 A client cannot create an administrator through the public registration endpoint, even if it submits:
-
+```
 {
 "username": "example",
 "password": "secret123",
 "role": "ADMIN"
 }
+```
 
 The resulting account is still created as:
-
+```
 {
 "role": "USER"
 }
+```
 
 Administrator accounts can be managed only through protected ADMIN endpoints.
 
@@ -333,20 +338,22 @@ GET /actuator/metrics/{metricName}
 ## Example Requests
 
 ### Register a user
-
+```
 curl -X POST http://localhost:8080/api/auth/register \
 -H "Content-Type: application/json" \
 -d '{
 "username": "newuser",
 "password": "secret123"
 }'
+```
 
 ### Get all students
-
+```
 curl http://localhost:8080/api/students
+```
 
 ### Create a student
-
+```
 curl -X POST http://localhost:8080/api/students \
 -u user:user123 \
 -H "Content-Type: application/json" \
@@ -355,9 +362,10 @@ curl -X POST http://localhost:8080/api/students \
 "lastName": "Beridze",
 "email": "nino@example.com"
 }'
+```
 
 ### Create a course
-
+```
 curl -X POST http://localhost:8080/api/courses \
 -u user:user123 \
 -H "Content-Type: application/json" \
@@ -366,19 +374,22 @@ curl -X POST http://localhost:8080/api/courses \
 "description": "Introduction to Spring Boot",
 "studentId": 1
 }'
+```
 
 ### Get the current user's profile
-
+```
 curl -u user:user123 \
 http://localhost:8080/api/auth/me
+```
 
 ### Get all registered users as ADMIN
-
+```
 curl -u admin:admin123 \
 http://localhost:8080/api/auth/users
+```
 
 ### Update a registered user as ADMIN
-
+```
 curl -X PUT http://localhost:8080/api/auth/users/2 \
 -u admin:admin123 \
 -H "Content-Type: application/json" \
@@ -387,6 +398,7 @@ curl -X PUT http://localhost:8080/api/auth/users/2 \
 "password": null,
 "role": "USER"
 }'
+```
 
 A null password keeps the user's current password unchanged.
 
@@ -402,8 +414,9 @@ The project contains the following primary domain entities:
 
 A student can have multiple courses.
 
-text
+```text
 Student 1 ─────── * Course
+```
 
 The relationship is implemented as:
 
@@ -451,17 +464,18 @@ Request DTOs use Jakarta validation annotations such as:
 Controllers use @Valid on request bodies.
 
 Example invalid request:
-
+```
 {
 "firstName": "",
 "lastName": "",
 "email": "invalid-email"
 }
+```
 
 The application returns a structured 400 Bad Request response instead of crashing.
 
 Example:
-
+```
 {
 "status": 400,
 "message": "Validation failed",
@@ -471,6 +485,7 @@ Example:
 ],
 "timestamp": "2026-06-29T12:00:00"
 }
+```
 
 ---
 
@@ -529,12 +544,14 @@ spring.profiles.default=dev
 Run explicitly with the development profile:
 
 ### Windows
-
+```
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
 
 ### macOS or Linux
-
+```
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
 
 The development profile uses an in-memory H2 database.
 
@@ -542,15 +559,17 @@ The database is recreated when the application restarts.
 
 H2 Console:
 
-text
+```text
 http://localhost:8080/h2-console
+```
 
 Connection settings:
 
-text
+```text
 JDBC URL: jdbc:h2:mem:homework_db
 Username: sa
 Password: leave empty
+```
 
 The development profile creates demonstration students, courses, and users.
 
@@ -568,18 +587,21 @@ Production database credentials are not stored directly in the project.
 
 The following environment variables are used:
 
-text
+```text
 DB_URL
 DB_USERNAME
 DB_PASSWORD
+```
 
 ### PowerShell example
-
+```
 $env:DB_URL="jdbc:postgresql://localhost:5432/homework_db"
 $env:DB_USERNAME="postgres"
 $env:DB_PASSWORD="your-secure-password"
-
+```
+```
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=prod"
+```
 
 ### macOS or Linux example
 
@@ -587,7 +609,9 @@ export DB_URL="jdbc:postgresql://localhost:5432/homework_db"
 export DB_USERNAME="postgres"
 export DB_PASSWORD="your-secure-password"
 
+```
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=prod
+```
 
 Run the packaged application with the production profile:
 
@@ -638,10 +662,11 @@ The locale is selected using the standard Accept-Language request header.
 
 Message bundles:
 
-text
+```text
 src/main/resources/messages.properties
 src/main/resources/messages_en.properties
 src/main/resources/messages_ka.properties
+```
 
 Localized content includes:
 
@@ -654,17 +679,19 @@ Localized content includes:
 * General API errors
 
 ### English request
-
+```
 curl -H "Accept-Language: en" \
 http://localhost:8080/api/info
+```
 
 ### Georgian request
-
+```
 curl -H "Accept-Language: ka" \
 http://localhost:8080/api/info
+```
 
 ### Georgian validation error
-
+```
 curl -X POST http://localhost:8080/api/auth/register \
 -H "Content-Type: application/json" \
 -H "Accept-Language: ka" \
@@ -672,6 +699,7 @@ curl -X POST http://localhost:8080/api/auth/register \
 "username": "ab",
 "password": "123"
 }'
+```
 
 ---
 
@@ -681,13 +709,15 @@ Swagger UI displays all REST endpoints and their short descriptions.
 
 Open Swagger:
 
-text
+```text
 http://localhost:8080/swagger-ui/index.html
+```
 
 The OpenAPI JSON document is available at:
 
-text
+```text
 http://localhost:8080/api-docs
+```
 
 HTTP Basic Authentication is configured in the OpenAPI specification.
 
@@ -695,8 +725,9 @@ Protected operations display a lock icon and can be tested using Swagger's *Auth
 
 Recommended development credentials:
 
-text
+```text
 admin / admin123
+```
 
 ---
 
@@ -751,8 +782,9 @@ Run tests and generate the report:
 
 Open the generated report:
 
-text
+```text
 target/site/jacoco/index.html
+```
 
 The report shows package, class, method, line, instruction, and branch coverage.
 
@@ -776,10 +808,11 @@ Only the required monitoring endpoints are exposed over HTTP.
 curl http://localhost:8080/actuator/health
 
 Example response:
-
+```
 {
 "status": "UP"
 }
+```
 
 The project includes a custom student database health indicator that reports whether student data can be accessed.
 
@@ -799,11 +832,12 @@ http://localhost:8080/actuator/metrics/app.students.total
 
 Custom metrics include:
 
-text
+```text
 app.students.total
 app.courses.total
 app.students.created
 app.courses.created
+```
 
 Actuator security is configured in SecurityConfig:
 
@@ -824,8 +858,9 @@ This avoids unnecessary string concatenation.
 
 Logging is configured in:
 
-text
+```text
 src/main/resources/logback-spring.xml
+```
 
 The configuration includes:
 
@@ -842,13 +877,15 @@ The configuration includes:
 
 Current log file:
 
-text
+```text
 logs/app.log
+```
 
 Archived logs:
 
-text
+```text
 logs/archive/
+```
 
 Rolling behavior:
 
@@ -858,15 +895,17 @@ Rolling behavior:
 
 Development logging:
 
-text
+```text
 Root: INFO
 com.example.homework: DEBUG
+```
 
 Production logging:
 
-text
+```text
 Root: WARN
 com.example.homework: INFO
+```
 
 ---
 
@@ -916,8 +955,9 @@ Before creating the final ZIP, run:
 
 The command should end with:
 
-text
+```text
 BUILD SUCCESS
+```
 
 Then run:
 
@@ -925,8 +965,9 @@ Then run:
 
 The command should also end with:
 
-text
+```text
 BUILD SUCCESS
+```
 
 Verify the following before submission:
 

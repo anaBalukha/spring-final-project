@@ -54,12 +54,10 @@ public class SecurityConfig {
                 // only ADMIN can delete
                 .requestMatchers(HttpMethod.DELETE, "/api/students/**", "/api/courses/**").hasRole("ADMIN")
                 // only ADMIN can list all users
-                .requestMatchers(HttpMethod.GET, "/api/auth/users").hasRole("ADMIN")
                     .requestMatchers("/api/auth/users", "/api/auth/users/**").hasRole("ADMIN")
                 // everything else requires at least authentication
                 .anyRequest().authenticated()
             )
-
             // allow the H2 console to render inside its own frames (dev profile)
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
 

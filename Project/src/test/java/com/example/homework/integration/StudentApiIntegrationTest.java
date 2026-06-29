@@ -160,11 +160,20 @@ class StudentApiIntegrationTest {
     }
 
     @Test
-    @DisplayName("an unknown endpoint returns 404 instead of 500")
+    @DisplayName("an authenticated request to an unknown endpoint returns 404")
     void unknownEndpoint_returns404() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/endpoint-that-does-not-exist", String.class);
+        // Unknown non-public routes first require authentication. After authentication, the request reaches Spring MVC
+        // and the missing endpoint correctly returns 404.
+        ResponseEntity<String> response =
+                restTemplate
+                        .withBasicAuth("admin", "admin123")
+                        .getForEntity(
+                                "/endpoint-that-does-not-exist",
+                                String.class
+                        );
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
